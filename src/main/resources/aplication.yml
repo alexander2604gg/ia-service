@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://dpg-d1osofbuibrs73d4gij0-a.oregon-postgres.render.com/ia_service_db
+    username: ia_service_db_user
+    password: gOqWww1M5RrEtT4mVEiRspVK04rbbo3P
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+aws:
+  access-key: ${AWS_ACCESS_KEY}
+  secret-key: ${AWS_SECRET_KEY}
+
+security:
+  jwt:
+    private:
+      key: Alexander
+    user:
+      generator: Alexander
