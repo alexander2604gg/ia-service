@@ -1,9 +1,13 @@
 spring:
+  application:
+    name: alexander
+
   datasource:
     url: jdbc:postgresql://dpg-d1osofbuibrs73d4gij0-a.oregon-postgres.render.com/ia_service_db
     username: ia_service_db_user
     password: gOqWww1M5RrEtT4mVEiRspVK04rbbo3P
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -19,6 +23,12 @@ aws:
 security:
   jwt:
     private:
-      key: Alexander
+      key: "tu_clave_privada_aqui"
     user:
-      generator: Alexander
+      generator: "tu_generador_aqui"
+
+deepseek:
+  api:
+    key: sk-72ef949c599f4249b3ae4e0b83269fb4
+    url: https://api.deepseek.com
+
