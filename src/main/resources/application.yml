@@ -1,6 +1,8 @@
 spring:
   application:
     name: alexander
+  destination:
+    folder: classpath:/static/
 
   datasource:
     url: jdbc:postgresql://dpg-d1osofbuibrs73d4gij0-a.oregon-postgres.render.com/ia_service_db
@@ -17,8 +19,9 @@ spring:
     show-sql: true
 
 aws:
-  access-key: ${AWS_ACCESS_KEY}
-  secret-key: ${AWS_SECRET_KEY}
+  accessKey: ${AWS_ACCESS_KEY}
+  secretKey: ${AWS_SECRET_KEY}
+  region: us-east-2
 
 security:
   jwt:
