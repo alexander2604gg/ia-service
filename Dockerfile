@@ -10,8 +10,8 @@ FROM openjdk:17-jdk-slim
 
 WORKDIR /app
 
-COPY --from=build /app/target/ia-service-0.0.1-SNAPSHOT.jar /app/ia-service.jar
+COPY --from=build /app/target/alexander-0.0.1-SNAPSHOT.jar /app/alexander.jar
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "/app/ia-service.jar"]
+CMD ["java", "-jar", "/app/alexander.jar"]
