@@ -10,5 +10,4 @@ import java.util.Optional;
 public interface UserSecRepository extends JpaRepository<UserSec, Long> {
 
     Optional<UserSec> findUserSecByEmail (String email);
-
 }

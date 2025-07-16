@@ -1,5 +1,6 @@
 package com.ia.alexander.service.impl;
 
+import com.ia.alexander.dto.consultation.response.ConsultationResponseDto;
 import com.ia.alexander.entity.ConsultationRequest;
 import com.ia.alexander.entity.Image;
 import com.ia.alexander.entity.Question;
@@ -14,14 +15,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ConsultationRequestServiceImpl implements ConsultationRequestService {
 
-    private final ImageRepository imageRepository;
     private final ConsultationRequestRepository consultationRequestRepository;
     private final UserSecRepository userSecRepository;
 
@@ -54,6 +54,28 @@ public class ConsultationRequestServiceImpl implements ConsultationRequestServic
         consultationRequest.setQuestions(questionsEntity);
         return consultationRequestRepository.save(consultationRequest);
     }
+
+    @Override
+    public List<ConsultationResponseDto> findAllByUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = (String) authentication.getPrincipal();
+
+        UserSec userSec = userSecRepository.findUserSecByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<ConsultationRequest> consultationRequests = consultationRequestRepository.findAllByUser(userSec);
+
+        return consultationRequests.stream()
+                .map(request -> {
+                    ConsultationResponseDto dto = new ConsultationResponseDto();
+                    dto.setConsultationRequestId(request.getConsultationRequestId());
+                    dto.setCreatedAt(request.getCreatedAt());
+                    dto.setQuestions(request.getQuestions());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
 
 
 
