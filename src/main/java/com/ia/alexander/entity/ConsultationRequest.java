@@ -22,9 +22,9 @@ public class ConsultationRequest {
     @Column(columnDefinition = "TEXT")
     private String aiResponse;
 
-    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "consultationRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
 
-    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "consultationRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images;
 }
