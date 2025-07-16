@@ -1,37 +1,63 @@
 spring:
   application:
-    name: alexander
+    name: ${SPRING_APPLICATION_NAME}
   destination:
-    folder: classpath:/static/
+    folder: ${SPRING_DESTINATION_FOLDER}
+  ai:
+    openai:
+      api-key: ${SPRING_AI_OPENAI_API_KEY}
+      speech:
+        api-key: ${SPRING_AI_OPENAI_SPEECH_API_KEY}
+      base-url: ${SPRING_AI_OPENAI_BASE_URL}
 
   datasource:
-    url: jdbc:postgresql://dpg-d1osofbuibrs73d4gij0-a.oregon-postgres.render.com/ia_service_db
-    username: ia_service_db_user
-    password: gOqWww1M5RrEtT4mVEiRspVK04rbbo3P
-    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
     properties:
       hibernate:
-        format_sql: true
-    show-sql: true
+        format_sql: ${SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL}
+    show-sql: ${SPRING_JPA_SHOW_SQL}
 
 aws:
   accessKey: ${AWS_ACCESS_KEY}
   secretKey: ${AWS_SECRET_KEY}
-  region: us-east-2
+  region: ${AWS_REGION}
 
 security:
   jwt:
     private:
-      key: "tu_clave_privada_aqui"
+      key: ${SECURITY_JWT_PRIVATE_KEY}
     user:
-      generator: "tu_generador_aqui"
+      generator: ${SECURITY_JWT_USER_GENERATOR}
 
 deepseek:
   api:
-    key: sk-72ef949c599f4249b3ae4e0b83269fb4
-    url: https://api.deepseek.com
+    key: ${DEEPSEEK_API_KEY}
+    url: ${DEEPSEEK_API_URL}
 
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
+    url: ${GEMINI_API_URL}
+
+feign:
+  client:
+    config:
+      default:
+        loggerLevel: ${FEIGN_CLIENT_CONFIG_DEFAULT_LOGGERLEVEL}
+
+logging:
+  level:
+    com.ia.alexander.client.ia: ${LOGGING_LEVEL_COM_IA_ALEXANDER_CLIENT_IA}
+    feign: ${LOGGING_LEVEL_FEIGN}
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
+    url: ${OPENAI_API_URL}

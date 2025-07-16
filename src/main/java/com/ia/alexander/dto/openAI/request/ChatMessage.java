@@ -6,6 +6,5 @@ import java.util.List;
 @Data
 public class ChatMessage {
     private String role;
-    private String content;
-    private List<ChatMessageContentPart> content2;
+    private List<ContentItemDTO> content;
 }

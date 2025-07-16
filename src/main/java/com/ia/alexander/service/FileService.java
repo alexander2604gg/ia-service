@@ -1,10 +1,11 @@
 package com.ia.alexander.service;
 
+import com.ia.alexander.dto.file.request.MultipleFilesDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public interface FileService {
-    boolean uploadFile (String bucketName , String key, Path fileLocation);
-    Path saveFileInFolder(String destinationFolder, MultipartFile file);
+    void uploadMultipleFiles(List<MultipartFile> files);
 }
