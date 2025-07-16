@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/file")
@@ -39,9 +40,28 @@ public class FileController {
             return ResponseEntity.badRequest().body("Debe enviar al menos una pregunta");
         }
 
-        ConsultationRequest result = fileService.uploadMultipleFiles(files, questions);
-        return ResponseEntity.ok(result);
+        // Validar extensiones
+        Set<String> formatosPermitidos = Set.of("png", "jpeg", "jpg", "gif", "webp");
+        for (MultipartFile file : files) {
+            String originalName = file.getOriginalFilename();
+            if (originalName == null || originalName.isBlank()) {
+                return ResponseEntity.badRequest().body("El archivo no tiene nombre válido.");
+            }
+
+            String lower = originalName.toLowerCase();
+            boolean extensionValida = formatosPermitidos.stream().anyMatch(lower::endsWith);
+            if (!extensionValida) {
+                return ResponseEntity.badRequest().body(
+                        "Formato de archivo no soportado: " + originalName +
+                                ". Usa png, jpeg, jpg, gif o webp."
+                );
+            }
+        }
+
+        // Si todo bien
+        return ResponseEntity.ok(fileService.uploadMultipleFiles(files, questions));
     }
+
 
 
 

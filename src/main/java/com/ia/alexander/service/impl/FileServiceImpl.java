@@ -29,9 +29,10 @@ public class FileServiceImpl implements FileService {
 
     private final ConsultationRequestService consultationRequestService;
     private final S3Client s3Client;
+    private final OpenAIService openAIService;
 
     @Override
-    public ConsultationRequest uploadMultipleFiles(List<MultipartFile> files, List<String> questions) {
+    public String uploadMultipleFiles(List<MultipartFile> files, List<String> questions) {
         List<String> urls = new ArrayList<>();
 
         for (MultipartFile file : files) {
@@ -58,7 +59,8 @@ public class FileServiceImpl implements FileService {
                 throw new RuntimeException("Error to upload files to S3", e);
             }
         }
-        return consultationRequestService.save(urls , questions);
+        ConsultationRequest consultationRequest = consultationRequestService.save(urls , questions);
+        return openAIService.analizarIncidenciaSeguridad(consultationRequest);
     }
 
     public String generateKeyWithOriginalExtension(MultipartFile file) {
