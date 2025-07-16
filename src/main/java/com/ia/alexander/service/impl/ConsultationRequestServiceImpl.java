@@ -1,10 +1,12 @@
 package com.ia.alexander.service.impl;
 
+import com.ia.alexander.dto.consultation.response.ConsultationInfoDto;
 import com.ia.alexander.dto.consultation.response.ConsultationResponseDto;
 import com.ia.alexander.entity.ConsultationRequest;
 import com.ia.alexander.entity.Image;
 import com.ia.alexander.entity.Question;
 import com.ia.alexander.entity.UserSec;
+import com.ia.alexander.exception.ResourceNotFoundException;
 import com.ia.alexander.repository.ConsultationRequestRepository;
 import com.ia.alexander.repository.ImageRepository;
 import com.ia.alexander.repository.UserSecRepository;
@@ -76,6 +78,18 @@ public class ConsultationRequestServiceImpl implements ConsultationRequestServic
                 .collect(Collectors.toList());
     }
 
+
+    @Override
+    public ConsultationInfoDto findById (Long id) {
+        ConsultationRequest consultationRequest = consultationRequestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Consulta"));
+        return ConsultationInfoDto.builder()
+                .aiResponse(consultationRequest.getAiResponse())
+                .images(consultationRequest.getImages())
+                .questions(consultationRequest.getQuestions())
+                .createdAt(consultationRequest.getCreatedAt())
+                .build();
+    }
 
 
 

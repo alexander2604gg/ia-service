@@ -2,6 +2,7 @@ package com.ia.alexander.service.impl;
 
 import com.ia.alexander.dto.file.request.MultipleFilesDto;
 import com.ia.alexander.entity.ConsultationRequest;
+import com.ia.alexander.repository.ConsultationRequestRepository;
 import com.ia.alexander.service.ConsultationRequestService;
 import com.ia.alexander.service.FileService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
 
+    private final ConsultationRequestRepository consultationRequestRepository;
     private final ConsultationRequestService consultationRequestService;
     private final S3Client s3Client;
     private final OpenAIService openAIService;
@@ -60,7 +62,10 @@ public class FileServiceImpl implements FileService {
             }
         }
         ConsultationRequest consultationRequest = consultationRequestService.save(urls , questions);
-        return openAIService.analizarIncidenciaSeguridad(consultationRequest);
+        String response = openAIService.analizarIncidenciaSeguridad(consultationRequest);
+        consultationRequest.setAiResponse(response);
+        consultationRequestRepository.save(consultationRequest);
+        return response;
     }
 
     public String generateKeyWithOriginalExtension(MultipartFile file) {
