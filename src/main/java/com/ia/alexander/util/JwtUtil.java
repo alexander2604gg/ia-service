@@ -21,13 +21,13 @@ public class JwtUtil {
 
     public String createToken (Authentication authentication) {
         Algorithm algorithm = Algorithm.HMAC256(privateKey);
-        String userName = authentication.getPrincipal().toString();
+        String email = authentication.getPrincipal().toString();
         Date now = new Date();
         Date expiration = new Date(System.currentTimeMillis() + (60 * 60 * 1000));
 
         return JWT.create()
                 .withIssuer(userGenerator)
-                .withSubject(userName)
+                .withSubject(email)
                 .withIssuedAt(now)
                 .withExpiresAt(expiration)
                 .sign(algorithm);
@@ -45,7 +45,7 @@ public class JwtUtil {
         }
     }
 
-    public String extractUsername (DecodedJWT decodedJWT) {
+    public String extractEmail (DecodedJWT decodedJWT) {
         return decodedJWT.getSubject();
     }
 

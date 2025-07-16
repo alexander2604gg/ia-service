@@ -31,9 +31,9 @@ public class JwtTokenValidator extends OncePerRequestFilter {
         if(jwt!=null){
             jwt = jwt.substring(7);
             DecodedJWT decodedJWT = jwtUtil.validateToken(jwt);
-            String userName = jwtUtil.extractUsername(decodedJWT);
+            String email = jwtUtil.extractEmail(decodedJWT);
             SecurityContext securityContext = SecurityContextHolder.getContext();
-            Authentication authentication = new UsernamePasswordAuthenticationToken(userName,null,null);
+            Authentication authentication = new UsernamePasswordAuthenticationToken(email,null,null);
             securityContext.setAuthentication(authentication);
             SecurityContextHolder.setContext(securityContext);
         }

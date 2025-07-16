@@ -22,9 +22,11 @@ public class ConsultationRequest {
     @Column(columnDefinition = "TEXT")
     private String aiResponse;
 
-    @OneToMany(mappedBy = "consultationRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "consultation_request_id") // Foreign Key en la tabla Question
     private List<Question> questions;
 
-    @OneToMany(mappedBy = "consultationRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "consultation_request_id") // Foreign Key en la tabla Image
     private List<Image> images;
 }

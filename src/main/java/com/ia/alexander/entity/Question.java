@@ -10,10 +10,6 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long questionId;
 
-    @ManyToOne
-    @JoinColumn(name = "consultation_request_id", nullable = false)
-    private ConsultationRequest consultationRequest;
-
     @Column(columnDefinition = "TEXT")
     private String questionText;
 }

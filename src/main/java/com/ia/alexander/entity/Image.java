@@ -10,10 +10,6 @@ public class Image {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageId;
 
-    @ManyToOne
-    @JoinColumn(name = "consultation_request_id", nullable = false)
-    private ConsultationRequest consultationRequest;
-
     @Column(columnDefinition = "TEXT")
     private String imageUrl;
 }

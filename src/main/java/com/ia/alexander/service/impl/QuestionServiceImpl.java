@@ -20,7 +20,6 @@ public class QuestionServiceImpl implements QuestionService {
         question.setQuestionText(questionRegisterDto.getQuestion());
         ConsultationRequest consultationRequest = new ConsultationRequest();
         consultationRequest.setConsultationRequestId(questionRegisterDto.getConsultationRequestId());
-        question.setConsultationRequest(consultationRequest);
         questionRepository.save(question);
     }
 
