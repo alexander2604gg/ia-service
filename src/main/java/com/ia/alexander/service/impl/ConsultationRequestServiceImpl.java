@@ -40,14 +40,15 @@ public class ConsultationRequestServiceImpl implements ConsultationRequestServic
                     image.setImageUrl(url);
                     return image;
                 })
-                .toList();
+                .collect(Collectors.toList()); // ✅ Mutable list
+
         List<Question> questionsEntity = questions.stream()
                 .map(question -> {
                     Question question1 = new Question();
                     question1.setQuestionText(question);
                     return question1;
                 })
-                .toList();
+                .collect(Collectors.toList()); // ✅ Mutable list
 
         ConsultationRequest consultationRequest = new ConsultationRequest();
         consultationRequest.setUser(userSec);
@@ -56,6 +57,7 @@ public class ConsultationRequestServiceImpl implements ConsultationRequestServic
         consultationRequest.setQuestions(questionsEntity);
         return consultationRequestRepository.save(consultationRequest);
     }
+
 
     @Override
     public List<ConsultationResponseDto> findAllByUser() {
