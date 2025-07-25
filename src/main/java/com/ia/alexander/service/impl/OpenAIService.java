@@ -2,7 +2,9 @@ package com.ia.alexander.service.impl;
 
 import com.ia.alexander.dto.ImagenRequestDto;
 import com.ia.alexander.entity.ConsultationRequest;
+import com.ia.alexander.entity.LoteCultivo;
 import com.ia.alexander.entity.Question;
+import com.ia.alexander.repository.LoteCultivoRepository;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.content.Media;
 import org.springframework.stereotype.Service;
@@ -10,15 +12,18 @@ import org.springframework.util.MimeTypeUtils;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class OpenAIService {
 
     private final ChatClient chatClient;
+    private final LoteCultivoRepository loteCultivoRepository;
 
-    public OpenAIService(ChatClient chatClient) {
+    public OpenAIService(ChatClient chatClient, LoteCultivoRepository loteCultivoRepository) {
         this.chatClient = chatClient;
+        this.loteCultivoRepository = loteCultivoRepository;
     }
 
     public String analizarIncidenciaSeguridad(ImagenRequestDto requestDto) {
@@ -97,6 +102,47 @@ public class OpenAIService {
                 )
                 .call()
                 .content();
+    }
+
+    public String predecirEficienciaLote(LoteCultivo lote) {
+        if (lote == null) {
+            throw new IllegalArgumentException("El lote no puede ser nulo");
+        }
+
+        // 🧠 Prompt con los datos del lote
+        String prompt = String.format("""
+    Se presentan los datos de un lote agrícola. Por favor, bríndame una predicción precisa sobre el rendimiento del cultivo:
+    
+    - Edad del cultivo (días): %d
+    - Tamaño del lote (ha): %.2f
+    - pH del suelo: %.2f
+    - Materia orgánica (%%): %.2f
+    - Precipitación acumulada (mm): %.2f
+    - Temperatura promedio (°C): %.2f
+    - Riegos por semana: %.2f
+    - Zona: %s
+    - Fertilización NPK: %s
+    - Uso de tratamiento fitosanitario: %s
+    """,
+                Optional.ofNullable(lote.getEdadCultivoDias()).orElse(0),
+                Optional.ofNullable(lote.getHectareas()).orElse(0.0),
+                Optional.ofNullable(lote.getPhSuelo()).orElse(0.0),
+                Optional.ofNullable(lote.getMateriaOrganica()).orElse(0.0),
+                Optional.ofNullable(lote.getPrecipitacionMm()).orElse(0.0),
+                Optional.ofNullable(lote.getTemperaturaPromedioC()).orElse(0.0),
+                Optional.ofNullable(lote.getRiegosPorSemana()).orElse(0.0),
+                Optional.ofNullable(lote.getZona()).orElse("Desconocida"),
+                Optional.ofNullable(lote.getFertilizacionNpk()).orElse("Desconocida"),
+                Optional.ofNullable(lote.isUsoTratamientoFitosanitario()).orElse(false) ? "Sí" : "No"
+        );
+
+        String answer = chatClient.prompt()
+                .user(userSpec -> userSpec.text(prompt))
+                .call()
+                .content();
+        lote.setEficiencia(answer);
+        //loteCultivoRepository.save(lote);
+        return answer;
     }
 
 

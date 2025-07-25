@@ -1,5 +1,6 @@
 package com.ia.alexander.controller;
 import com.ia.alexander.dto.ImagenRequestDto;
+import com.ia.alexander.entity.LoteCultivo;
 import com.ia.alexander.service.impl.OpenAIService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,12 @@ public class OpenAIController {
     @PostMapping("/analizar-incidencia")
     public ResponseEntity<String> analizar(@RequestBody ImagenRequestDto request){
         String resultado = openAIService.analizarIncidenciaSeguridad(request);
+        return ResponseEntity.ok(resultado);
+    }
+
+    @PostMapping("/analizar-lote")
+    public ResponseEntity<String> analizar(@RequestBody LoteCultivo lote){
+        String resultado = openAIService.predecirEficienciaLote(lote);
         return ResponseEntity.ok(resultado);
     }
 
