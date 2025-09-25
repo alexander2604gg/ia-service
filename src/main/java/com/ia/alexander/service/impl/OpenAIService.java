@@ -1,6 +1,8 @@
 package com.ia.alexander.service.impl;
 
 import com.ia.alexander.dto.ImagenRequestDto;
+import com.ia.alexander.dto.mendoza.GovernanceChartDTO;
+import com.ia.alexander.dto.mendoza.GovernanceEvaluationRequest;
 import com.ia.alexander.entity.ConsultationRequest;
 import com.ia.alexander.entity.LoteCultivo;
 import com.ia.alexander.entity.Question;
@@ -14,12 +16,101 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class OpenAIService {
 
     private final ChatClient chatClient;
     private final LoteCultivoRepository loteCultivoRepository;
+
+    public GovernanceChartDTO generarReporteGraficable(String analisisTexto) {
+        if (analisisTexto == null || analisisTexto.isBlank()) {
+            throw new IllegalArgumentException("El análisis de madurez no puede estar vacío");
+        }
+
+        String prompt = """
+        Tienes el siguiente análisis de Gobernanza de TI:
+
+        %s
+
+        Quiero que transformes este análisis en un JSON ESTRICTO con este formato:
+
+        {
+          "dimensionScores": [
+            { "dimension": "Gestión de riesgos", "puntaje": 1-5 },
+            { "dimension": "Alineación estratégica", "puntaje": 1-5 },
+            { "dimension": "Roles y responsabilidades", "puntaje": 1-5 },
+            { "dimension": "Métricas de desempeño", "puntaje": 1-5 },
+            { "dimension": "Optimización continua", "puntaje": 1-5 }
+          ],
+          "nivelMadurezGlobal": "Inicial | Repetible | Definido | Gestionado | Optimizado",
+          "comentarioGlobal": "Texto breve"
+        }
+
+        - Usa puntajes numéricos de 1 a 5 según el nivel de madurez de cada dimensión.
+        - Devuélveme ÚNICAMENTE el JSON, sin texto adicional.
+        - Responde ÚNICAMENTE con JSON válido.
+        - No uses backticks, no uses bloques de markdown.
+        - No expliques nada.
+        """.formatted(analisisTexto);
+
+        String respuestaJson = chatClient.prompt()
+                .user(userSpec -> userSpec.text(prompt))
+                .call()
+                .content();
+
+        // 🔧 Sanitizar respuesta para evitar errores con backticks o texto extra
+        respuestaJson = respuestaJson
+                .replaceAll("(?s)```json", "")
+                .replaceAll("(?s)```", "")
+                .trim();
+
+        // En caso de que devuelva texto antes/después del JSON, recortamos
+        int start = respuestaJson.indexOf("{");
+        int end = respuestaJson.lastIndexOf("}");
+        if (start >= 0 && end > start) {
+            respuestaJson = respuestaJson.substring(start, end + 1);
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(respuestaJson, GovernanceChartDTO.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al parsear respuesta de la IA a GovernanceChartDTO. Respuesta cruda: "
+                    + respuestaJson, e);
+        }
+    }
+
+    public String evaluarMadurezGobernanza(GovernanceEvaluationRequest request) {
+        if (request == null || request.getRespuestas() == null || request.getRespuestas().isEmpty()) {
+            throw new IllegalArgumentException("Debe enviar al menos una respuesta de Gobernanza de TI");
+        }
+
+        // Contexto fijo
+        String contextoFijo = """
+        Eres un experto en Gobernanza de TI.
+        Debes analizar las respuestas proporcionadas y determinar el nivel de madurez de la organización en TI.
+        Usa un enfoque basado en niveles de madurez (Inicial, Repetible, Definido, Gestionado, Optimizado).
+        Proporciona un análisis claro, con observaciones y una conclusión del nivel de madurez alcanzado.
+        
+        Aquí están las preguntas y las respuestas:
+        """;
+
+        // Construir el bloque con preguntas y respuestas
+        String respuestas = request.getRespuestas().stream()
+                .map(r -> "- Pregunta: " + r.getPregunta() + "\n  Respuesta: " + r.getRespuesta())
+                .collect(Collectors.joining("\n\n"));
+
+        String promptCompleto = contextoFijo + "\n\n" + respuestas;
+
+        // Enviar a la IA
+        return chatClient.prompt()
+                .user(userSpec -> userSpec.text(promptCompleto))
+                .call()
+                .content();
+    }
+
 
     public OpenAIService(ChatClient chatClient, LoteCultivoRepository loteCultivoRepository) {
         this.chatClient = chatClient;
