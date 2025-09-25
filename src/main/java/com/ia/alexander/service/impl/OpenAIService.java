@@ -3,6 +3,7 @@ package com.ia.alexander.service.impl;
 import com.ia.alexander.dto.ImagenRequestDto;
 import com.ia.alexander.dto.mendoza.GovernanceChartDTO;
 import com.ia.alexander.dto.mendoza.GovernanceEvaluationRequest;
+import com.ia.alexander.dto.mendoza.RoadmapDTO;
 import com.ia.alexander.entity.ConsultationRequest;
 import com.ia.alexander.entity.LoteCultivo;
 import com.ia.alexander.entity.Question;
@@ -23,6 +24,74 @@ public class OpenAIService {
 
     private final ChatClient chatClient;
     private final LoteCultivoRepository loteCultivoRepository;
+
+    public RoadmapDTO generarRoadmap(String analisisTexto) {
+        if (analisisTexto == null || analisisTexto.isBlank()) {
+            throw new IllegalArgumentException("El análisis de madurez no puede estar vacío");
+        }
+
+        String prompt = """
+        Tienes el siguiente análisis de Gobernanza de TI:
+
+        %s
+
+        Quiero que transformes este análisis en un JSON que represente un roadmap de mejora
+        estilo tablero Kanban (como ClickUp o Trello). 
+
+        El JSON debe tener el siguiente formato:
+
+        {
+          "etapas": [
+            {
+              "nombre": "Corto plazo",
+              "tareas": [
+                { "titulo": "Texto de la tarea", "estado": "Pendiente | En progreso | Completado" }
+              ]
+            },
+            {
+              "nombre": "Mediano plazo",
+              "tareas": [ ... ]
+            },
+            {
+              "nombre": "Largo plazo",
+              "tareas": [ ... ]
+            }
+          ]
+        }
+
+        - Genera al menos 2 tareas por etapa.
+        - Usa estados variados (Pendiente, En progreso, Completado).
+        - Devuélveme ÚNICAMENTE el JSON válido.
+        - No uses backticks, no uses bloques de markdown.
+        - No expliques nada.
+        """.formatted(analisisTexto);
+
+        String respuestaJson = chatClient.prompt()
+                .user(userSpec -> userSpec.text(prompt))
+                .call()
+                .content();
+
+        // 🔧 Sanitizar (igual que en generarReporteGraficable)
+        respuestaJson = respuestaJson
+                .replaceAll("(?s)```json", "")
+                .replaceAll("(?s)```", "")
+                .trim();
+
+        int start = respuestaJson.indexOf("{");
+        int end = respuestaJson.lastIndexOf("}");
+        if (start >= 0 && end > start) {
+            respuestaJson = respuestaJson.substring(start, end + 1);
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(respuestaJson, RoadmapDTO.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al parsear respuesta de la IA a RoadmapDTO. Respuesta cruda: "
+                    + respuestaJson, e);
+        }
+    }
+
 
     public GovernanceChartDTO generarReporteGraficable(String analisisTexto) {
         if (analisisTexto == null || analisisTexto.isBlank()) {

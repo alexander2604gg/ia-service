@@ -2,6 +2,7 @@ package com.ia.alexander.controller;
 import com.ia.alexander.dto.ImagenRequestDto;
 import com.ia.alexander.dto.mendoza.GovernanceChartDTO;
 import com.ia.alexander.dto.mendoza.GovernanceEvaluationRequest;
+import com.ia.alexander.dto.mendoza.RoadmapDTO;
 import com.ia.alexander.entity.LoteCultivo;
 import com.ia.alexander.service.impl.OpenAIService;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,10 @@ public class OpenAIController {
         return ResponseEntity.ok(openAIService.generarReporteGraficable(request));
     }
 
+    @PostMapping("/analizar-mendoza-roadmap")
+    public ResponseEntity<RoadmapDTO> roadmap(@RequestBody String request) {
+        return ResponseEntity.ok(openAIService.generarRoadmap(request));
+    }
     /*@PostMapping("/analizar-incidencia")
     public ResponseEntity<String> analizar(@RequestBody ImagenRequestDto request){
         String resultado = openAIService.analizarIncidenciaSeguridad(request);
