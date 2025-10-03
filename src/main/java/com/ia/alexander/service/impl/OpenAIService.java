@@ -38,7 +38,7 @@ public class OpenAIService {
         // 📝 Construimos un prompt que contenga todos los textos
         StringBuilder promptBuilder = new StringBuilder();
         promptBuilder.append("""
-            Vas a actuar como un modelo de clasificación de texto.
+            Vas a actuar como un modelo de clasificación de texto para ver si un post tiene depresion o no
 
             Para cada uno de los siguientes textos, debes devolver una respuesta JSON con este formato exacto:
 
