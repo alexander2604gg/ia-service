@@ -3,6 +3,8 @@ import com.ia.alexander.dto.ImagenRequestDto;
 import com.ia.alexander.dto.mendoza.GovernanceChartDTO;
 import com.ia.alexander.dto.mendoza.GovernanceEvaluationRequest;
 import com.ia.alexander.dto.mendoza.RoadmapDTO;
+import com.ia.alexander.dto.tesis.ModelBatchRequestDto;
+import com.ia.alexander.dto.tesis.PredictBatchResponseDto;
 import com.ia.alexander.entity.LoteCultivo;
 import com.ia.alexander.service.impl.OpenAIService;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,12 @@ public class OpenAIController {
 
     public OpenAIController(OpenAIService openAIService) {
         this.openAIService = openAIService;
+    }
+
+    @PostMapping("/analizar-depresion")
+    public ResponseEntity<PredictBatchResponseDto> analizar(@RequestBody ModelBatchRequestDto request) {
+        PredictBatchResponseDto resultado = openAIService.predictBatch(request);
+        return ResponseEntity.ok(resultado);
     }
 
     @PostMapping("/analizar-mendoza")
