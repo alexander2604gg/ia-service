@@ -27,40 +27,6 @@ public class FileController {
 
     private final FileService fileService;
 
-    @PostMapping(value = "/upload-multiple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Subir múltiples archivos y preguntas")
-    public ResponseEntity<?> uploadMultipleFiles(
-            @RequestParam("files") List<MultipartFile> files,
-            @RequestParam("questions") List<String> questions
-    ) {
-        if (files == null || files.isEmpty()) {
-            return ResponseEntity.badRequest().body("Debe subir al menos un archivo");
-        }
-        if (questions == null || questions.isEmpty()) {
-            return ResponseEntity.badRequest().body("Debe enviar al menos una pregunta");
-        }
-
-        // Validar extensiones
-        Set<String> formatosPermitidos = Set.of("png", "jpeg", "jpg", "gif", "webp");
-        for (MultipartFile file : files) {
-            String originalName = file.getOriginalFilename();
-            if (originalName == null || originalName.isBlank()) {
-                return ResponseEntity.badRequest().body("El archivo no tiene nombre válido.");
-            }
-
-            String lower = originalName.toLowerCase();
-            boolean extensionValida = formatosPermitidos.stream().anyMatch(lower::endsWith);
-            if (!extensionValida) {
-                return ResponseEntity.badRequest().body(
-                        "Formato de archivo no soportado: " + originalName +
-                                ". Usa png, jpeg, jpg, gif o webp."
-                );
-            }
-        }
-
-        // Si todo bien
-        return ResponseEntity.ok(fileService.uploadMultipleFiles(files, questions));
-    }
 
 
 

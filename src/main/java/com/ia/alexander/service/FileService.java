@@ -8,5 +8,4 @@ import java.nio.file.Path;
 import java.util.List;
 
 public interface FileService {
-    String uploadMultipleFiles(List<MultipartFile> files, List<String> questions);
 }

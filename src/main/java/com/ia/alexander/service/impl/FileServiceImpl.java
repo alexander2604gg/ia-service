@@ -33,41 +33,6 @@ public class FileServiceImpl implements FileService {
     private final S3Client s3Client;
     private final OpenAIService openAIService;
 
-    @Override
-    public String uploadMultipleFiles(List<MultipartFile> files, List<String> questions) {
-        List<String> urls = new ArrayList<>();
-
-        for (MultipartFile file : files) {
-            String key = generateKeyWithOriginalExtension(file);
-            PutObjectRequest objectRequest = PutObjectRequest.builder()
-                    .bucket("security-api-5245432")
-                    .contentDisposition("inline")
-                    .key(key)
-                    .build();
-
-            try {
-                s3Client.putObject(objectRequest, RequestBody.fromBytes(file.getBytes()));
-
-                // Construye la URL usando el cliente S3
-                String url = s3Client.utilities().getUrl(
-                        GetUrlRequest.builder()
-                                .bucket("security-api-5245432")
-                                .key(key)
-                                .build()
-                ).toString();
-
-                urls.add(url);
-            } catch (IOException e) {
-                throw new RuntimeException("Error to upload files to S3", e);
-            }
-        }
-        ConsultationRequest consultationRequest = consultationRequestService.save(urls , questions);
-        String response = openAIService.analizarIncidenciaSeguridad(consultationRequest);
-        consultationRequest.setAiResponse(response);
-        consultationRequestRepository.save(consultationRequest);
-        return response;
-    }
-
     public String generateKeyWithOriginalExtension(MultipartFile file) {
         String originalName = file.getOriginalFilename();
         String extension = "";

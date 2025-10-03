@@ -8,7 +8,5 @@ import java.util.List;
 
 public interface ConsultationRequestService {
 
-    ConsultationRequest save (List<String> urls, List<String> questions);
-    List<ConsultationResponseDto> findAllByUser();
     ConsultationInfoDto findById (Long id);
 }

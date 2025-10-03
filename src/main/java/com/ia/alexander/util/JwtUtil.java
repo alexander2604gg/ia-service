@@ -7,7 +7,6 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.security.core.Authentication;
 
 import java.util.Date;
 
@@ -19,19 +18,6 @@ public class JwtUtil {
     @Value("${security.jwt.user.generator}")
     private String userGenerator;
 
-    public String createToken (Authentication authentication) {
-        Algorithm algorithm = Algorithm.HMAC256(privateKey);
-        String email = authentication.getPrincipal().toString();
-        Date now = new Date();
-        Date expiration = new Date(System.currentTimeMillis() + (60 * 60 * 1000));
-
-        return JWT.create()
-                .withIssuer(userGenerator)
-                .withSubject(email)
-                .withIssuedAt(now)
-                .withExpiresAt(expiration)
-                .sign(algorithm);
-    }
 
     public DecodedJWT validateToken (String token) {
         try{

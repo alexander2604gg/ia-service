@@ -14,10 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ConsultationController {
     private final ConsultationRequestService consultationRequestService;
 
-    @GetMapping
-    public ResponseEntity<?> findAll(){
-        return ResponseEntity.ok(consultationRequestService.findAllByUser());
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findById (@PathVariable Long id) {
