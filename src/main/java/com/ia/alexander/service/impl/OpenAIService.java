@@ -4,6 +4,10 @@ import com.ia.alexander.dto.ImagenRequestDto;
 import com.ia.alexander.dto.mendoza.GovernanceChartDTO;
 import com.ia.alexander.dto.mendoza.GovernanceEvaluationRequest;
 import com.ia.alexander.dto.mendoza.RoadmapDTO;
+import com.ia.alexander.dto.tesis.ModelBatchRequestDto;
+import com.ia.alexander.dto.tesis.ModelRequestDto;
+import com.ia.alexander.dto.tesis.PredictBatchResponseDto;
+import com.ia.alexander.dto.tesis.PredictResponseDto;
 import com.ia.alexander.entity.ConsultationRequest;
 import com.ia.alexander.entity.LoteCultivo;
 import com.ia.alexander.entity.Question;
@@ -14,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,6 +29,78 @@ public class OpenAIService {
 
     private final ChatClient chatClient;
     private final LoteCultivoRepository loteCultivoRepository;
+
+    public PredictBatchResponseDto predictBatch(ModelBatchRequestDto requestDto) {
+        if (requestDto == null || requestDto.getTexts() == null || requestDto.getTexts().isEmpty()) {
+            throw new IllegalArgumentException("La lista de textos no puede estar vacía");
+        }
+
+        // 📝 Construimos un prompt que contenga todos los textos
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append("""
+            Vas a actuar como un modelo de clasificación de texto.
+
+            Para cada uno de los siguientes textos, debes devolver una respuesta JSON con este formato exacto:
+
+            [
+              {
+                "redditId": "id del texto",
+                "text": "texto original",
+                "prediction": {
+                  "label": "EtiquetaPredicha",
+                  "score": 0.0
+                }
+              }
+            ]
+
+            - El campo "label" debe contener LABEL_0 (No tuvo depresion), LABEL_1 (Si tiene depresion)
+            - El campo "score" debe ser un número entre 0 y 1 que represente la confianza.
+            - NO expliques nada. NO uses markdown. Devuelve SOLO el JSON válido.
+            
+            Lista de textos:
+            """);
+
+        for (ModelRequestDto textDto : requestDto.getTexts()) {
+            promptBuilder.append("- ID: ").append(textDto.getRedditId())
+                    .append("\n  Texto: ").append(textDto.getText()).append("\n\n");
+        }
+
+        String prompt = promptBuilder.toString();
+
+        // 🚀 Llamamos al modelo de ChatGPT
+        String rawResponse = chatClient.prompt()
+                .user(userSpec -> userSpec.text(prompt))
+                .call()
+                .content();
+
+        // 🧼 Sanitizamos la respuesta (igual que en tu otro ejemplo)
+        rawResponse = rawResponse
+                .replaceAll("(?s)```json", "")
+                .replaceAll("(?s)```", "")
+                .trim();
+
+        int start = rawResponse.indexOf("[");
+        int end = rawResponse.lastIndexOf("]");
+        if (start >= 0 && end > start) {
+            rawResponse = rawResponse.substring(start, end + 1);
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            // 🧠 Parseamos la respuesta a la lista de predicciones
+            List<PredictResponseDto> predictions = mapper.readValue(
+                    rawResponse,
+                    mapper.getTypeFactory().constructCollectionType(ArrayList.class, PredictResponseDto.class)
+            );
+
+            PredictBatchResponseDto responseDto = new PredictBatchResponseDto();
+            responseDto.setPredictions(predictions);
+            return responseDto;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al parsear la respuesta de la IA. Respuesta cruda: " + rawResponse, e);
+        }
+    }
 
     public RoadmapDTO generarRoadmap(String analisisTexto) {
         if (analisisTexto == null || analisisTexto.isBlank()) {
